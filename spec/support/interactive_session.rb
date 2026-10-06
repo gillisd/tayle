@@ -1,7 +1,7 @@
 require "pty"
 
 class InteractiveSession
-  PROMPT = "tail-spec$ ".freeze
+  PROMPT = "tayle-spec$ ".freeze
   SHELL = ["bash", "--norc", "--noprofile", "-i"].freeze
 
   attr_reader :watcher

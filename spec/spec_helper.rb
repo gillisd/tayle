@@ -1,6 +1,6 @@
 require "timeout"
 require "tmpdir"
-require "tail"
+require "tayle"
 require_relative "support/eventually"
 require_relative "support/eventually_helper"
 require_relative "support/process_probe"

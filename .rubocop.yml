@@ -121,7 +121,7 @@ Metrics/BlockLength:
     - shared_examples_for
     - shared_context
   Exclude:
-    - "tail.gemspec"
+    - "tayle.gemspec"
 
 # =============================================================================
 # Style: strings
@@ -381,7 +381,7 @@ Style/Documentation:
 # Compact class names are fine for small files and tests.
 #
 #   # allowed here, flagged by stock
-#   class Tail::Writer
+#   class Tayle::Writer
 #   end
 Style/ClassAndModuleChildren:
   Enabled: false
@@ -408,7 +408,7 @@ Claude/NoFancyUnicode:
     - "\u0003" # ctrl+c
     - "\u001A" # ctrl+z
   Exclude:
-    - "tail.gemspec"
+    - "tayle.gemspec"
 
 # lib/ documents with rdoc, whose usage examples are indented code in comments.
 # The cop only recognizes YARD's `@example`, so every rdoc example reads as

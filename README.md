@@ -1,4 +1,4 @@
-# Tail
+# Tayle
 
 Follow a file by name with GNU tail -F, across rotation and truncation
 
@@ -6,29 +6,29 @@ Follow a file by name with GNU tail -F, across rotation and truncation
 
 Install the gem and add to the application's Gemfile by executing:
 
-    $ bundle add tail
+    $ bundle add tayle
 
 If bundler is not being used to manage dependencies, install the gem by executing:
 
-    $ gem install tail
+    $ gem install tayle
 
 ## Usage
 
-`Tail.new` follows a file by name, so it keeps going across log rotation and
+`Tayle.new` follows a file by name, so it keeps going across log rotation and
 truncation. Reading starts at the current end of the file:
 
 ```ruby
-Tail.new("app.log") do |tail|
-  tail.each_line(chomp: true).lazy.map(&:upcase).each { puts it }
+Tayle.new("app.log") do |tayle|
+  tayle.each_line(chomp: true).lazy.map(&:upcase).each { puts it }
 end
 ```
 
 Pass `position: :start` to read what the log already holds first, `writer_pid:`
 to stop once the process writing it does, and `tail_path:` to run a `tail`
-other than the first on `PATH`. See the rdoc on `Tail` for the details.
+other than the first on `PATH`. See the rdoc on `Tayle` for the details.
 
 Requires GNU coreutils `tail` 8.28 or newer; anything else raises
-`Tail::Unsupported`.
+`Tayle::Unsupported`.
 
 ## Development
 

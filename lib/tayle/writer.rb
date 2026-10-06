@@ -1,4 +1,4 @@
-class Tail
+class Tayle
   Writer = Data.define(:pid) do
     def initialize(pid:)
       super(pid: Integer(pid))

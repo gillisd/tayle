@@ -1,8 +1,8 @@
-require_relative "lib/tail/version"
+require_relative "lib/tayle/version"
 
 Gem::Specification.new do |spec|
-  spec.name = "tail"
-  spec.version = Tail::VERSION
+  spec.name = "tayle"
+  spec.version = Tayle::VERSION
   spec.authors = ["David Gillis"]
   spec.email = ["david@flipmine.com"]
   spec.summary = "Follow a file by name with GNU tail -F, across rotation and truncation"

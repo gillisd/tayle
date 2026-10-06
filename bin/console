@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require "bundler/setup"
-require "tail"
+require "tayle"
 require "irb"
 
 IRB.start(__FILE__)

@@ -1,4 +1,4 @@
-class Tail
+class Tayle
   OLDEST_SUPPORTED_VERSION = [8, 28].freeze
   private_constant :OLDEST_SUPPORTED_VERSION
 
@@ -30,7 +30,7 @@ class Tail
       raise Unsupported, "#{executable} is not GNU coreutils tail" unless version
       return unless (version <=> OLDEST_SUPPORTED_VERSION).negative?
 
-      raise Unsupported, "#{executable} is GNU coreutils tail #{version.join(".")}; Tail needs 8.28 or newer"
+      raise Unsupported, "#{executable} is GNU coreutils tail #{version.join(".")}; Tayle needs 8.28 or newer"
     end
   end
   private_constant :GnuTail
