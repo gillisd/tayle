@@ -72,6 +72,12 @@ RSpec.describe Tail do
       end
     end
 
+    describe "#position" do
+      it "is :end by default" do
+        expect(tail.position).to eq(:end)
+      end
+    end
+
     describe "#lines_read" do
       it "starts at zero" do
         expect(tail.lines_read).to eq(0)
@@ -203,8 +209,8 @@ RSpec.describe Tail do
   end
 
   describe ".new" do
-    it "accepts a String path" do
-      expect { follow(log.to_s, &:itself) }.not_to raise_error
+    it "accepts a String path, reporting it as a Pathname" do
+      expect(follow(log.to_s, &:itself).path).to eq(log)
     end
 
     it "rejects a writer_pid that isn't an integer" do
@@ -224,6 +230,10 @@ RSpec.describe Tail do
       it "yields what the log already holds, then what is appended" do
         append("new record\n")
         expect(tail.first(2)).to eq(["old record\n", "new record\n"])
+      end
+
+      it "reports :start as its position" do
+        expect(tail.position).to eq(:start)
       end
     end
 

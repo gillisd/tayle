@@ -67,9 +67,22 @@ class Tail
     @lines_read = 0
     @owner_pid = Process.pid
     gnu_tail = GnuTail.locate(tail_path)
-    command = Command.new(executable: gnu_tail.executable, path:, writer: @writer, position:)
-    @pipe = IO.popen(command.argv)
+    @command = Command.new(executable: gnu_tail.executable, path:, writer: @writer, position:)
+    @pipe = IO.popen(@command.argv)
     yield_and_close(&block) if block
+  end
+
+  ##
+  # The Pathname being followed.
+  def path
+    @command.path
+  end
+
+  ##
+  # Where reading began: +:start+ or +:end+ of #path.  Not a live offset, since +tail+ moves on to
+  # a new file when the log is rotated.
+  def position
+    @command.position
   end
 
   ##
