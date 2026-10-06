@@ -9,26 +9,26 @@ require "zeitwerk"
 # and a log truncated and refilled past its old size before +tail+ notices is read from the old
 # offset.
 #
-#   Tail.new("app.log") do |tail|
-#     tail.each_line(chomp: true).lazy.map(&:upcase).each { puts it }
+#   Tayle.new("app.log") do |tayle|
+#     tayle.each_line(chomp: true).lazy.map(&:upcase).each { puts it }
 #   end
 #
 # Pass <tt>position: :start</tt> to read what the log already holds first, +writer_pid+ to stop
 # when the process writing it does, and +tail_path+ to run a +tail+ other than the first on +PATH+:
 #
 #   writer_pid = Integer(Pathname("app.pid").read)
-#   Tail.new("app.log", position: :start, writer_pid:, tail_path: "/opt/coreutils/bin/tail") do |tail|
-#     tail.each { print it }
+#   Tayle.new("app.log", position: :start, writer_pid:, tail_path: "/opt/coreutils/bin/tail") do |tayle|
+#     tayle.each { print it }
 #   end
-class Tail
+class Tayle
   include Enumerable
 
   ##
-  # The Zeitwerk loader autoloading everything under +lib/tail/+.
+  # The Zeitwerk loader autoloading everything under +lib/tayle/+.
   LOADER = Zeitwerk::Loader.for_gem.tap(&:setup)
 
   ##
-  # Raised by Tail.new unless +tail_path+ names an executable GNU coreutils +tail+ 8.28 or newer,
+  # Raised by Tayle.new unless +tail_path+ names an executable GNU coreutils +tail+ 8.28 or newer,
   # the first release to exit by itself once nothing reads its output.
   class Unsupported < StandardError
   end
@@ -63,7 +63,7 @@ class Tail
   # otherwise a command looked up on +PATH+.  Raises Unsupported unless that is an executable GNU
   # coreutils +tail+ 8.28 or newer.
   #
-  # With a block, yields the Tail and closes it when the block exits.
+  # With a block, yields the Tayle and closes it when the block exits.
   def initialize(path, writer_pid: nil, tail_path: "tail", position: :end, &block)
     @writer = writer_pid&.then { Writer.new(pid: it) }
     @lines_read = 0

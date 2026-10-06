@@ -1,4 +1,4 @@
-class Tail
+class Tayle
   POSITIONS = [:start, :end].freeze
   private_constant :POSITIONS
 

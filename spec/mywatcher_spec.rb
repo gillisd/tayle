@@ -74,15 +74,15 @@ RSpec.shared_examples "mywatcher started from a shell" do
   context "when its tail is killed" do
     before { session.start("mywatcher file.log") }
 
-    it "dies loudly with Tail::Exited instead of exiting as if done" do
+    it "dies loudly with Tayle::Exited instead of exiting as if done" do
       session.watcher.tail.signal(:KILL)
-      expect { session.output }.to eventually(include("Tail::Exited"))
+      expect { session.output }.to eventually(include("Tayle::Exited"))
       expect { session.watcher }.to eventually(have_attributes(state: :gone))
     end
   end
 end
 
-RSpec.describe "mywatcher, a CLI built on Tail" do
+RSpec.describe "mywatcher, a CLI built on Tayle" do
   include_context "with file.log in a scratch directory"
 
   context "in an interactive shell" do

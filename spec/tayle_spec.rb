@@ -1,4 +1,4 @@
-RSpec.describe Tail do
+RSpec.describe Tayle do
   include_context "with a scratch directory"
 
   let(:log) { dir.join("app.log").tap { it.write("old record\n") } }
@@ -24,9 +24,9 @@ RSpec.describe Tail do
   end
 
   shared_examples "loud when tail is killed" do
-    it "raises Tail::Exited from #each, with tail's status" do
+    it "raises Tayle::Exited from #each, with tail's status" do
       kill_tail
-      expect { tail.first }.to raise_error(Tail::Exited, /SIGKILL/) { expect(it.status.termsig).to eq(9) }
+      expect { tayle.first }.to raise_error(Tayle::Exited, /SIGKILL/) { expect(it.status.termsig).to eq(9) }
     end
   end
 
@@ -34,23 +34,23 @@ RSpec.describe Tail do
     it "ends #each once the writer is gone, after yielding its last records" do
       writer.puts("go")
       writer.close
-      expect(tail.to_a).to eq(["last record\n"])
+      expect(tayle.to_a).to eq(["last record\n"])
     end
   end
 
   context "when following a log" do
-    subject!(:tail) { follow(log) }
+    subject!(:tayle) { follow(log) }
 
-    after { tail.close }
+    after { tayle.close }
 
     describe "#each" do
       it "yields only records appended after it was opened" do
         append("new record\n")
-        expect(tail.first).to eq("new record\n")
+        expect(tayle.first).to eq("new record\n")
       end
 
       it "blocks until the next record arrives" do
-        reader = Thread.new { tail.first }
+        reader = Thread.new { tayle.first }
         Thread.pass until reader.stop?
         expect(reader).to be_alive
         append("late record\n")
@@ -63,60 +63,60 @@ RSpec.describe Tail do
     describe "#each_line" do
       it "strips line endings with chomp: true" do
         append("new record\n")
-        expect(tail.each_line(chomp: true).first).to eq("new record")
+        expect(tayle.each_line(chomp: true).first).to eq("new record")
       end
 
       it "returns an Enumerator that composes lazily" do
         append("a\nb\n")
-        expect(tail.each_line(chomp: true).lazy.map(&:upcase).first(2)).to eq(["A", "B"])
+        expect(tayle.each_line(chomp: true).lazy.map(&:upcase).first(2)).to eq(["A", "B"])
       end
     end
 
     describe "#position" do
       it "is :end by default" do
-        expect(tail.position).to eq(:end)
+        expect(tayle.position).to eq(:end)
       end
     end
 
     describe "#lines_read" do
       it "starts at zero" do
-        expect(tail.lines_read).to eq(0)
+        expect(tayle.lines_read).to eq(0)
       end
 
       it "counts every line yielded, across iterations" do
         append("a\nb\nc\n")
-        tail.first
-        tail.each_line(chomp: true).first(2)
-        expect(tail.lines_read).to eq(3)
+        tayle.first
+        tayle.each_line(chomp: true).first(2)
+        expect(tayle.lines_read).to eq(3)
       end
 
       it "keeps its count after #close" do
         append("a\nb\n")
-        tail.first(2)
-        tail.close
-        expect(tail.lines_read).to eq(2)
+        tayle.first(2)
+        tayle.close
+        expect(tayle.lines_read).to eq(2)
       end
     end
 
     describe "#close" do
       it "kills the tail process" do
-        expect { tail.close }.to change { tail_process.exited? }.from(false).to(true)
+        expect { tayle.close }.to change { tail_process.exited? }.from(false).to(true)
       end
 
       it "makes further reads raise IOError" do
-        tail.close
-        expect { tail.first }.to raise_error(IOError, "closed stream")
+        tayle.close
+        expect { tayle.first }.to raise_error(IOError, "closed stream")
       end
 
       it "can be called more than once" do
-        tail.close
-        expect { tail.close }.not_to raise_error
+        tayle.close
+        expect { tayle.close }.not_to raise_error
       end
 
       context "when called in a forked child" do
         before do
           child = fork do
-            tail.close
+            tayle.close
             exit!
           end
           Process.wait(child)
@@ -125,7 +125,7 @@ RSpec.describe Tail do
         it "leaves the parent's tail running" do
           expect(tail_process).not_to be_exited
           append("new record\n")
-          expect(tail.first).to eq("new record\n")
+          expect(tayle.first).to eq("new record\n")
         end
       end
 
@@ -138,7 +138,7 @@ RSpec.describe Tail do
         end
 
         it "still kills the tail process" do
-          expect { tail.close }.to change { tail_process.exited? }.from(false).to(true)
+          expect { tayle.close }.to change { tail_process.exited? }.from(false).to(true)
         end
 
         context "and tail inherited an ignored SIGTERM" do
@@ -152,7 +152,7 @@ RSpec.describe Tail do
           end
 
           it "still kills the tail process" do
-            expect { tail.close }.to change { tail_process.exited? }.from(false).to(true)
+            expect { tayle.close }.to change { tail_process.exited? }.from(false).to(true)
           end
         end
       end
@@ -161,20 +161,20 @@ RSpec.describe Tail do
     context "when the log is rotated" do
       it "follows the name onto the new file" do
         append("before rotation\n")
-        expect(tail.first).to eq("before rotation\n")
+        expect(tayle.first).to eq("before rotation\n")
         log.rename("#{log}.1")
         append("after rotation\n")
-        expect(tail.first).to eq("after rotation\n")
+        expect(tayle.first).to eq("after rotation\n")
       end
     end
 
     context "when the log is truncated" do
       it "reads it again from the start" do
         append("before truncation\n")
-        expect(tail.first).to eq("before truncation\n")
+        expect(tayle.first).to eq("before truncation\n")
         log.truncate(0)
         append("after truncation\n")
-        expect(tail.first).to eq("after truncation\n")
+        expect(tayle.first).to eq("after truncation\n")
       end
     end
 
@@ -185,7 +185,7 @@ RSpec.describe Tail do
 
       it "still treats it as a path" do
         append("new record\n")
-        expect(tail.first).to eq("new record\n")
+        expect(tayle.first).to eq("new record\n")
       end
     end
 
@@ -196,14 +196,14 @@ RSpec.describe Tail do
 
       it "yields its records once it appears" do
         append("first record\n")
-        expect(tail.first).to eq("first record\n")
+        expect(tayle.first).to eq("first record\n")
       end
 
       it "polls for records ten times a second" do
         append("first record\n")
-        tail.first
+        tayle.first
         append("second record\n")
-        expect(Timeout.timeout(0.5) { tail.first }).to eq("second record\n")
+        expect(Timeout.timeout(0.5) { tayle.first }).to eq("second record\n")
       end
     end
   end
@@ -223,17 +223,17 @@ RSpec.describe Tail do
     end
 
     context "with position: :start" do
-      subject!(:tail) { follow(log, position: :start) }
+      subject!(:tayle) { follow(log, position: :start) }
 
-      after { tail.close }
+      after { tayle.close }
 
       it "yields what the log already holds, then what is appended" do
         append("new record\n")
-        expect(tail.first(2)).to eq(["old record\n", "new record\n"])
+        expect(tayle.first(2)).to eq(["old record\n", "new record\n"])
       end
 
       it "reports :start as its position" do
-        expect(tail.position).to eq(:start)
+        expect(tayle.position).to eq(:start)
       end
     end
 
@@ -259,38 +259,41 @@ RSpec.describe Tail do
 
       it "rejects GNU coreutils 8.27, naming its version" do
         tail_path = write_script("echo 'tail (GNU coreutils) 8.27'")
-        message = "#{tail_path} is GNU coreutils tail 8.27; Tail needs 8.28 or newer"
-        expect { follow(log, tail_path:) }.to raise_error(Tail::Unsupported, message)
+        message = "#{tail_path} is GNU coreutils tail 8.27; Tayle needs 8.28 or newer"
+        expect { follow(log, tail_path:) }.to raise_error(Tayle::Unsupported, message)
       end
 
       it "rejects a tail that isn't GNU's, whatever its version" do
         tail_path = write_script("echo 'tail (uutils coreutils) 9.9'")
-        expect { follow(log, tail_path:) }.to raise_error(Tail::Unsupported, "#{tail_path} is not GNU coreutils tail")
+        expect { follow(log, tail_path:) }.to raise_error(Tayle::Unsupported, "#{tail_path} is not GNU coreutils tail")
       end
 
       it "rejects a directory" do
         tail_path = dir.join("tail").tap(&:mkdir)
-        expect { follow(log, tail_path:) }.to raise_error(Tail::Unsupported, "#{tail_path} not found or not executable")
+        message = "#{tail_path} not found or not executable"
+        expect { follow(log, tail_path:) }.to raise_error(Tayle::Unsupported, message)
       end
 
       it "rejects a file that isn't executable" do
         tail_path = dir.join("tail").tap { it.write("") }
-        expect { follow(log, tail_path:) }.to raise_error(Tail::Unsupported, "#{tail_path} not found or not executable")
+        message = "#{tail_path} not found or not executable"
+        expect { follow(log, tail_path:) }.to raise_error(Tayle::Unsupported, message)
       end
 
       it "rejects a path that doesn't exist" do
         tail_path = dir.join("missing")
-        expect { follow(log, tail_path:) }.to raise_error(Tail::Unsupported, "#{tail_path} not found or not executable")
+        message = "#{tail_path} not found or not executable"
+        expect { follow(log, tail_path:) }.to raise_error(Tayle::Unsupported, message)
       end
     end
 
     context "with the writer's pid" do
-      subject!(:tail) { follow(log, writer_pid: writer.pid) }
+      subject!(:tayle) { follow(log, writer_pid: writer.pid) }
 
       let(:writer) { IO.popen(["sh", "-c", 'read go && printf "last record\n" >> "$1"', "sh", log.to_s], mode: "w") }
 
       after do
-        tail.close
+        tayle.close
         writer.close
       end
 
@@ -307,7 +310,7 @@ RSpec.describe Tail do
     end
 
     context "with a block" do
-      it "yields the tail" do
+      it "yields the tayle" do
         expect { |block| follow(log, &block) }.to yield_with_args(described_class)
       end
 
