@@ -100,7 +100,7 @@ RSpec.describe Tail do
 
     describe "#close" do
       it "kills the tail process" do
-        expect { tail.close }.to change(tail_process, :exited?).from(false).to(true)
+        expect { tail.close }.to change { tail_process.exited? }.from(false).to(true)
       end
 
       it "makes further reads raise IOError" do
@@ -138,7 +138,7 @@ RSpec.describe Tail do
         end
 
         it "still kills the tail process" do
-          expect { tail.close }.to change(tail_process, :exited?).from(false).to(true)
+          expect { tail.close }.to change { tail_process.exited? }.from(false).to(true)
         end
 
         context "and tail inherited an ignored SIGTERM" do
@@ -152,7 +152,7 @@ RSpec.describe Tail do
           end
 
           it "still kills the tail process" do
-            expect { tail.close }.to change(tail_process, :exited?).from(false).to(true)
+            expect { tail.close }.to change { tail_process.exited? }.from(false).to(true)
           end
         end
       end
@@ -320,6 +320,12 @@ RSpec.describe Tail do
         expect { follow(log) { raise "boom" } }.to raise_error(RuntimeError, "boom")
         expect(tail_process).to be_exited
       end
+    end
+  end
+
+  describe "VERSION" do
+    it "has a version number" do
+      expect(described_class::VERSION).not_to be_nil
     end
   end
 end

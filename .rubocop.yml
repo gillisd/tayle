@@ -2,13 +2,24 @@
 # RuboCop configuration
 #
 # Base:       stock RuboCop defaults (verified against 1.91.0)
+# Plugins:    rubocop-claude (AI guardrails), rubocop-rspec, rubocop-performance
+#             (chain-hostile cops disabled), rubocop-rake
 # Philosophy: idiomatic Ruby, pipeline-style chaining, strict for AI agents,
 #             readable for humans.
 # =============================================================================
 
+plugins:
+  - rubocop-claude
+  - rubocop-rspec
+  - rubocop-performance
+  - rubocop-rake
+
 AllCops:
   NewCops: enable
   TargetRubyVersion: 4.0
+  Exclude:
+    - bin/*
+    - vendor/**/*
 
 # =============================================================================
 # Layout
@@ -28,6 +39,19 @@ AllCops:
 #   ))
 Layout/FirstArgumentIndentation:
   EnforcedStyle: consistent
+
+# Dot-aligned chaining: the dots form a visual column. This is stock's default,
+# restated here because rubocop-claude switches it to `indented`.
+#
+#   # bad
+#   ROOT = Pathname(__dir__)
+#     .parent
+#
+#   # good
+#   ROOT = Pathname(__dir__)
+#          .parent
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: aligned
 
 # =============================================================================
 # Metrics
@@ -79,6 +103,8 @@ Layout/FirstArgumentIndentation:
 #   describe Foo do
 #     # ... any number of lines
 #   end
+#
+# Exclude: the gemspec is one long block by construction.
 Metrics/BlockLength:
   Max: 8
   CountAsOne:
@@ -94,6 +120,8 @@ Metrics/BlockLength:
     - shared_examples
     - shared_examples_for
     - shared_context
+  Exclude:
+    - "tail.gemspec"
 
 # =============================================================================
 # Style: strings
@@ -204,17 +232,19 @@ Style/TrailingCommaInArrayLiteral:
 Style/TrailingCommaInHashLiteral:
   EnforcedStyleForMultiline: comma
 
-# PROJECT is intentionally mutable: version lifecycle methods (refresh_version!,
-# increment_version) reassign @version on the shared instance.
+# Only literal mutable values get flagged. The Zeitwerk loader is mutable by
+# design — it keeps registering autoloads after LOADER is assigned.
 #
-#   # bad (elsewhere)
+#   # bad
 #   COLORS = ["red", "green", "blue"]
 #
-#   # good (elsewhere)
+#   # good
 #   COLORS = ["red", "green", "blue"].freeze
+#
+#   # good - not a literal, so `strict` would be wrong here
+#   LOADER = Zeitwerk::Loader.for_gem.tap(&:setup)
 Style/MutableConstant:
-  Exclude:
-    - "Rakefile"
+  EnforcedStyle: literals
 
 # =============================================================================
 # Style: blocks and pipelines
@@ -347,3 +377,100 @@ Style/Documentation:
   Exclude:
     - "spec/**/*"
     - "test/**/*"
+
+# Compact class names are fine for small files and tests.
+#
+#   # allowed here, flagged by stock
+#   class Tail::Writer
+#   end
+Style/ClassAndModuleChildren:
+  Enabled: false
+
+# =============================================================================
+# Overrides from rubocop-claude — loosen where pipeline style conflicts
+# =============================================================================
+
+# Safe navigation reads fine two links deep; past that it hides a nil bug.
+Claude/NoOverlyDefensiveCode:
+  MaxSafeNavigationChain: 2
+
+Style/SafeNavigation:
+  MaxChainLength: 2
+
+# Allow `return a, b` for tuple-style returns.
+Style/RedundantReturn:
+  AllowMultipleReturnValues: true
+
+# The gemspec's `\x0`-delimited `git ls-files` reader is deliberate, not fancy,
+# and the PTY specs have to send real control characters: ctrl+c and ctrl+z.
+Claude/NoFancyUnicode:
+  AllowedUnicode:
+    - "\u0003" # ctrl+c
+    - "\u001A" # ctrl+z
+  Exclude:
+    - "tail.gemspec"
+
+# lib/ documents with rdoc, whose usage examples are indented code in comments.
+# The cop only recognizes YARD's `@example`, so every rdoc example reads as
+# commented-out code to it.
+Claude/NoCommentedCode:
+  Exclude:
+    - "lib/**/*"
+
+# =============================================================================
+# Overrides from rubocop-performance — disable chain-hostile cops
+# =============================================================================
+
+Performance/ChainArrayAllocation:
+  Enabled: false
+
+Performance/MapMethodChain:
+  Enabled: false
+
+# =============================================================================
+# RSpec — rubocop-rspec overrides
+# =============================================================================
+
+# spec/fixtures holds programs the specs run, not specs. They are ordinary
+# Ruby and the RSpec cops have nothing to say about them.
+RSpec:
+  Exclude:
+    - "spec/fixtures/**/*"
+
+# Not every describe block wraps a class.
+RSpec/DescribeClass:
+  Enabled: false
+
+# spec_helper gives every example `aggregate_failures`, so a second expectation
+# still reports both failures instead of masking the later one.
+RSpec/MultipleExpectations:
+  Max: 2
+
+# These specs nest by process state: shell, then job control, then signal.
+RSpec/NestedGroups:
+  Max: 5
+
+# `in` for the shell a watcher runs in, `and` for a context that narrows the
+# one above it.
+RSpec/ContextWording:
+  Prefixes:
+    - when
+    - with
+    - without
+    - in
+    - and
+
+# Subject placement is a readability call, not a rule.
+RSpec/LeadingSubject:
+  Enabled: false
+
+# Block style for expect { }.to change { } reads like a sentence.
+RSpec/ExpectChange:
+  EnforcedStyle: block
+
+RSpec/NamedSubject:
+  Enabled: false
+
+# Shared contexts legitimately define many helpers.
+RSpec/MultipleMemoizedHelpers:
+  Max: 10

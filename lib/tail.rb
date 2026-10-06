@@ -1,6 +1,4 @@
-require_relative "tail/gnu_tail"
-require_relative "tail/writer"
-require_relative "tail/command"
+require "zeitwerk"
 
 ##
 # Follows a file by name with GNU <tt>tail -F</tt>, so it keeps going across log rotation and
@@ -24,6 +22,10 @@ require_relative "tail/command"
 #   end
 class Tail
   include Enumerable
+
+  ##
+  # The Zeitwerk loader autoloading everything under +lib/tail/+.
+  LOADER = Zeitwerk::Loader.for_gem.tap(&:setup)
 
   ##
   # Raised by Tail.new unless +tail_path+ names an executable GNU coreutils +tail+ 8.28 or newer,

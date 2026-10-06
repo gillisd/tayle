@@ -54,12 +54,25 @@ class InteractiveSession
 
   def close
     @watcher&.kill
-    Process.kill(:KILL, @pid) rescue nil
+    kill_shell
     [@reader, @writer].reject(&:closed?).each(&:close)
-    Process.wait(@pid) rescue nil
+    reap_shell
   end
 
   private
+
+  # The shell may have exited on its own, which is what several examples check.
+  def kill_shell
+    Process.kill(:KILL, @pid)
+  rescue Errno::ESRCH
+    nil
+  end
+
+  def reap_shell
+    Process.wait(@pid)
+  rescue Errno::ECHILD
+    nil
+  end
 
   def press(key, echo:)
     since = @output.mark
@@ -67,7 +80,7 @@ class InteractiveSession
     @output.await(echo, since:)
   end
 
-  def wait_until(&condition)
-    Timeout.timeout(5) { sleep 0.02 until condition.call }
+  def wait_until
+    Timeout.timeout(5) { sleep 0.02 until yield }
   end
 end

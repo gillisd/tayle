@@ -17,7 +17,12 @@ Watcher = Data.define(:process, :tail) do
     tail.state
   end
 
+  # Either may already be gone, and one being gone must not spare the other.
   def kill
-    [process, tail].each { it.signal(:KILL) rescue nil }
+    [process, tail].each do |target|
+      target.signal(:KILL)
+    rescue Errno::ESRCH
+      nil
+    end
   end
 end

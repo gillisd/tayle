@@ -31,8 +31,11 @@ class DetachedSession
     @output.to_s
   end
 
+  # The group may already be gone, which is what several examples check.
   def close
     @watcher&.kill
-    signal_group(:KILL) rescue nil
+    signal_group(:KILL)
+  rescue Errno::ESRCH
+    nil
   end
 end
