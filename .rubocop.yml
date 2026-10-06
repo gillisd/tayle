@@ -1,0 +1,348 @@
+# RuboCop configuration
+#
+# Base:       stock RuboCop defaults (verified against 1.91.0)
+# Philosophy: idiomatic Ruby, pipeline-style chaining, strict for AI agents,
+#             readable for humans.
+# =============================================================================
+
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 4.0
+
+# =============================================================================
+# Layout
+# =============================================================================
+
+# Consistent 2-space indent for a first argument on its own line, never
+# aligned to a nested call.
+#
+#   # bad
+#   foo = some_method(nested_call(
+#                       nested_first_param
+#                     ))
+#
+#   # good
+#   foo = some_method(nested_call(
+#     nested_first_param
+#   ))
+Layout/FirstArgumentIndentation:
+  EnforcedStyle: consistent
+
+# =============================================================================
+# Metrics
+# =============================================================================
+
+# Short blocks push toward small chained steps instead of fat lambdas.
+# Stock default is 25. We want 8.
+#
+#   # bad - 9 lines of body
+#   users.map do |user|
+#     name = user.full_name
+#     parts = name.split(" ")
+#     first = parts.first
+#     last = parts.last
+#     domain = user.email.split("@").last
+#     address = "#{first}.#{last}@#{domain}"
+#     normalized = address.downcase
+#     handle = normalized.strip
+#     handle.to_sym
+#   end
+#
+#   # good - each step is one line
+#   users
+#     .map(&:full_name)
+#     .map { it.split(" ") }
+#     .map { "#{it.first}.#{it.last}" }
+#     .map(&:downcase)
+#
+# CountAsOne: a multiline array, hash, heredoc, or method call is one line.
+#
+#   # good - the hash spans 10 lines but counts as 1
+#   users.each do |user|
+#     attributes = {
+#       id: user.id,
+#       name: user.name,
+#       email: user.email,
+#       role: user.role,
+#       plan: user.plan,
+#       status: user.status,
+#       created_at: user.created_at,
+#       updated_at: user.updated_at,
+#     }
+#     audit(attributes)
+#   end
+#
+# AllowedMethods: DSL blocks are exempt. Replaces stock's `refine` entry.
+#
+#   # good - long, but `describe` is allowed
+#   describe Foo do
+#     # ... any number of lines
+#   end
+Metrics/BlockLength:
+  Max: 8
+  CountAsOne:
+    - array
+    - hash
+    - heredoc
+    - method_call
+  AllowedMethods:
+    - command
+    - describe
+    - context
+    - namespace
+    - shared_examples
+    - shared_examples_for
+    - shared_context
+
+# =============================================================================
+# Style: strings
+# =============================================================================
+
+# Double quotes everywhere. One less decision to make.
+#
+#   # bad
+#   name = 'Alice'
+#
+#   # good
+#   name = "Alice"
+#   greeting = "Hello, #{name}"
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+# Same rule inside interpolation. Stock wants single quotes here.
+#
+#   # bad
+#   status = "Tests #{success ? 'PASS' : 'FAIL'}"
+#
+#   # good
+#   status = "Tests #{success ? "PASS" : "FAIL"}"
+Style/StringLiteralsInInterpolation:
+  EnforcedStyle: double_quotes
+
+# Frozen string literal is transitional cruft. Ruby 3.4 has chilled strings,
+# and full default freeze is coming. `never` makes autocorrect strip existing
+# magic comments.
+#
+#   # bad - autocorrect will strip this
+#   # frozen_string_literal: true
+#
+#   class Foo
+#   end
+#
+#   # good
+#   class Foo
+#   end
+Style/FrozenStringLiteralComment:
+  EnforcedStyle: never
+
+# =============================================================================
+# Style: literals
+# =============================================================================
+
+# Write arrays like arrays. Disabled cops flag the second form in stock.
+#
+#   # allowed here, flagged by stock
+#   colors = ["red", "green", "blue"]
+#
+#   # not used
+#   colors = %w[red green blue]
+Style/WordArray:
+  Enabled: false
+
+#   # allowed here, flagged by stock
+#   statuses = [:active, :inactive, :pending]
+#
+#   # not used
+#   statuses = %i[active inactive pending]
+Style/SymbolArray:
+  Enabled: false
+
+# Trailing commas in multiline literals and arguments. Cleaner diffs: adding an
+# element doesn't touch the previous line, and appending saves a keystroke.
+# `comma` applies only when each element sits on its own line.
+#
+#   # bad
+#   method_call(
+#     arg1,
+#     arg2
+#   )
+#
+#   # good
+#   method_call(
+#     arg1,
+#     arg2,
+#   )
+Style/TrailingCommaInArguments:
+  EnforcedStyleForMultiline: comma
+
+#   # bad
+#   colors = [
+#     "red",
+#     "green"
+#   ]
+#
+#   # good
+#   colors = [
+#     "red",
+#     "green",
+#   ]
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: comma
+
+#   # bad
+#   hash = {
+#     name: "Alice",
+#     age: 30
+#   }
+#
+#   # good
+#   hash = {
+#     name: "Alice",
+#     age: 30,
+#   }
+Style/TrailingCommaInHashLiteral:
+  EnforcedStyleForMultiline: comma
+
+# PROJECT is intentionally mutable: version lifecycle methods (refresh_version!,
+# increment_version) reassign @version on the shared instance.
+#
+#   # bad (elsewhere)
+#   COLORS = ["red", "green", "blue"]
+#
+#   # good (elsewhere)
+#   COLORS = ["red", "green", "blue"].freeze
+Style/MutableConstant:
+  Exclude:
+    - "Rakefile"
+
+# =============================================================================
+# Style: blocks and pipelines
+# =============================================================================
+
+# Pipeline style. Chaining multiline blocks is the whole point. Stock forbids
+# a multiline block followed by another call.
+#
+#   # allowed here, flagged by stock
+#   users
+#     .select do |user|
+#       user.active?
+#       user.confirmed?
+#     end
+#     .map do |user|
+#       user.name
+#     end
+Style/MultilineBlockChain:
+  Enabled: false
+
+# Block delimiters are a taste call. Braces for functional transforms, do/end
+# for side effects. No cop captures this nuance.
+#
+#   # allowed here, flagged by stock (multiline braces)
+#   names = users.map { |user|
+#     user.name.downcase
+#   }
+#
+#   # good in both
+#   users.each do |user|
+#     send_notification(user)
+#     log_activity(user)
+#   end
+Style/BlockDelimiters:
+  Enabled: false
+
+# =============================================================================
+# Style: error handling
+# =============================================================================
+
+# Inline fallback is fine when the failure mode is obvious.
+#
+#   # allowed here, flagged by stock
+#   port = Integer(ENV["PORT"]) rescue 3000
+Style/RescueModifier:
+  Enabled: false
+
+# An explicit begin/rescue/end scopes what's being rescued. Without it, the
+# rescue reads as part of the method signature. Stock flags a begin that wraps
+# the entire body.
+#
+#   # allowed here, flagged by stock
+#   def process
+#     begin
+#       dangerous_call
+#     rescue NetworkError => e
+#       retry_later(e)
+#     end
+#   end
+#
+#   # also fine, and needs no exemption: begin scopes only part of the body
+#   def process
+#     logger.info("starting")
+#     begin
+#       dangerous_call
+#     rescue NetworkError => e
+#       retry_later(e)
+#     end
+#     logger.info("done")
+#   end
+Style/RedundantBegin:
+  Enabled: false
+
+# =============================================================================
+# Style: methods and documentation
+# =============================================================================
+
+# Named args are explicit and portable. Anonymous forwarding (*, **, &) breaks
+# TruffleRuby, JRuby, and Ruby < 3.2. Stock wants `...` or anonymous.
+#
+#   # allowed here, flagged by stock
+#   def process(*args, **kwargs, &block)
+#     other_method(*args, **kwargs, &block)
+#   end
+Style/ArgumentsForwarding:
+  Enabled: false
+
+# Same rationale as above. Stock wants a bare `&`.
+#
+#   # bad
+#   def process(&)
+#     other_method(&)
+#   end
+#
+#   # good
+#   def process(&block)
+#     other_method(&block)
+#   end
+Naming/BlockForwarding:
+  EnforcedStyle: explicit
+
+# Endless methods are a one-line trick. Every method gets def/end. Stock
+# only forbids the multiline form.
+#
+#   # bad
+#   def upstream = "http://#{host}:#{port}"
+#
+#   # good
+#   def upstream
+#     "http://#{host}:#{port}"
+#   end
+Style/EndlessMethod:
+  EnforcedStyle: disallow
+
+# Classes get rdoc. Run `rake rdoc` and keep it honest. Already on in stock;
+# the override only exempts specs and tests.
+#
+#   # bad
+#   class UserService
+#     attr_reader :user
+#   end
+#
+#   # good
+#   # Handles user lifecycle operations.
+#   class UserService
+#     attr_reader :user
+#   end
+Style/Documentation:
+  Enabled: true
+  Exclude:
+    - "spec/**/*"
+    - "test/**/*"

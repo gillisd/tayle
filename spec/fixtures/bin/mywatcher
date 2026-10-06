@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+require "tail"
+
+$stdout.sync = true
+path = ARGV.fetch(0)
+Tail.new(path) do |tail|
+  puts "mywatcher #{Process.pid} following #{path}"
+  tail.each_line(chomp: true) { puts "record: #{it}" }
+end
