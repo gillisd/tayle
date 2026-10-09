@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   spec.email = ["david@flipmine.com"]
   spec.summary = "Follow a file by name with GNU tail -F, across rotation and truncation"
   spec.license = "MIT"
-  spec.required_ruby_version = ">= 4.0.6"
+  spec.required_ruby_version = ">= 3.4.10"
 
   gemspec_file = File.basename(__FILE__)
   files = IO.popen(["git", "ls-files", "-z"], chdir: __dir__, err: IO::NULL) { |ls|
