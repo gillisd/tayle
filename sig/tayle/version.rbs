@@ -1,0 +1,3 @@
+class Tayle
+  VERSION: String
+end

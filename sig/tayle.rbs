@@ -1,0 +1,39 @@
+class Tayle
+  include Enumerable[String]
+
+  # Where reading begins: the file's current end, or its first byte.
+  type position = :start | :end
+
+  LOADER: Zeitwerk::GemLoader
+
+  class Unsupported < StandardError
+  end
+
+  class Exited < StandardError
+    # nil if something else reaped tail first.
+    attr_reader status: Process::Status?
+
+    def initialize: (status: Process::Status?) -> void
+  end
+
+  attr_reader lines_read: Integer
+
+  # Any Symbol reaches Command, which raises ArgumentError unless it is :start or :end;
+  # writer_pid is coerced with Integer(), so a non-numeric String raises the same.
+  def initialize: (String | Pathname path, ?writer_pid: (Integer | String)?, ?tail_path: String | Pathname, ?position: Symbol) ?{ (Tayle) -> void } -> void
+
+  def path: () -> Pathname
+
+  def position: () -> position
+
+  def each: (?chomp: bool) { (String) -> void } -> self
+          | (?chomp: bool) -> Enumerator[String, self]
+
+  alias each_line each
+
+  def close: () -> void
+
+  private
+
+  def yield_and_close: [T] () { (Tayle) -> T } -> T
+end

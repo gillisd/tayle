@@ -1,0 +1,22 @@
+class Tayle
+  OLDEST_SUPPORTED_VERSION: [Integer, Integer]
+
+  # A located tail executable and its coreutils version, nil when not GNU.
+  class GnuTail < Data
+    attr_reader executable: Pathname
+    attr_reader version: [Integer, Integer]?
+
+    def self.new: (executable: Pathname, version: [Integer, Integer]?) -> instance
+                | (Pathname executable, [Integer, Integer]? version) -> instance
+
+    def self.members: () -> [:executable, :version]
+
+    def self.locate: (String | Pathname command) -> instance
+
+    private def self.list_candidates: (String | Pathname command) -> Array[Pathname]
+
+    private def self.read_version: (Pathname executable) -> [Integer, Integer]?
+
+    def check_supported: () -> void
+  end
+end

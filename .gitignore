@@ -9,3 +9,6 @@
 /tmp/
 Gemfile.lock
 *.gem
+rbs_collection.lock.yaml
+rbs_collection.yaml
+.gem_rbs_collection

@@ -7,6 +7,7 @@ gem "gempilot", require: false if Gem::Version.new(RUBY_VERSION) >= Gem::Version
 gem "irb"
 gem "json", "~> 2.21" # temporary json 3.0.0 is currently breaking everything
 gem "rake"
+gem "rbs"
 gem "rspec", git: "https://github.com/rspec/rspec.git"
 gem "rubocop"
 gem "rubocop-claude"
