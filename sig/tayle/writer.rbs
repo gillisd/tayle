@@ -1,0 +1,17 @@
+class Tayle
+  # The process writing the log; tail --pid exits once it is reaped.
+  class Writer < Data
+    attr_reader pid: Integer
+
+    def self.new: (pid: Integer | String) -> instance
+                | (Integer | String pid) -> instance
+
+    def self.members: () -> [:pid]
+
+    def initialize: (pid: Integer | String) -> void
+
+    def flag: () -> String
+
+    def gone?: () -> bool
+  end
+end

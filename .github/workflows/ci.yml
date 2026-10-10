@@ -26,3 +26,5 @@ jobs:
       run: bundle exec rake spec
     - name: Run RuboCop
       run: bundle exec rake rubocop
+    - name: Validate RBS signatures
+      run: bundle exec rake rbs:validate

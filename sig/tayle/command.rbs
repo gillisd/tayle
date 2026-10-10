@@ -1,0 +1,26 @@
+class Tayle
+  # Private constants; RBS has no private_constant.
+  POSITIONS: Array[position]
+
+  # The tail invocation: argv for one path, writer and start position.
+  class Command < Data
+    attr_reader executable: Pathname
+    attr_reader path: Pathname
+    attr_reader writer: Writer?
+    attr_reader position: position
+
+    def self.new: (executable: Pathname, path: String | Pathname, writer: Writer?, position: position) -> instance
+                | (Pathname executable, String | Pathname path, Writer? writer, position position) -> instance
+
+    def self.members: () -> [:executable, :path, :writer, :position]
+
+    # Raises ArgumentError for any Symbol but :start or :end.
+    def initialize: (executable: Pathname, path: String | Pathname, writer: Writer?, position: Symbol) -> void
+
+    def argv: () -> Array[String]
+
+    private
+
+    def first_byte: () -> Integer
+  end
+end
