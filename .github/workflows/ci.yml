@@ -11,7 +11,8 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    # ubuntu-26.04 ships uutils coreutils, and tayle requires GNU tail.
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         ruby-version: ['3.4.10', '4.0.6']
