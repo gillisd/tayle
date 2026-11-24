@@ -4,8 +4,8 @@ class Tayle
 
   Command = Data.define(:executable, :path, :writer, :position) do
     def initialize(executable:, path:, writer:, position:)
-      unless POSITIONS.include?(position)
-        raise ArgumentError, "position: must be :start or :end, not #{position.inspect}"
+      unless POSITIONS.include?(position) || (position.is_a?(Integer) && !position.negative?)
+        raise ArgumentError, "position: must be :start, :end or a byte offset, not #{position.inspect}"
       end
 
       super(executable:, path: Pathname(path), writer:, position:)
@@ -29,6 +29,7 @@ class Tayle
       case position
       in :start then 1
       in :end then path.size?.to_i + 1
+      in Integer => offset then offset + 1
       end
     end
   end

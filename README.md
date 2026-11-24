@@ -23,7 +23,8 @@ Tayle.new("app.log") do |tayle|
 end
 ```
 
-Pass `position: :start` to read what the log already holds first, `writer_pid:`
+Pass `position: :start` to read what the log already holds first, or a byte offset
+to start there, `writer_pid:`
 to stop once the process writing it does, and `tail_path:` to run a `tail`
 other than the first on `PATH`. See the rdoc on `Tayle` for the details.
 

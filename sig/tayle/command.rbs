@@ -14,8 +14,8 @@ class Tayle
 
     def self.members: () -> [:executable, :path, :writer, :position]
 
-    # Raises ArgumentError for any Symbol but :start or :end.
-    def initialize: (executable: Pathname, path: String | Pathname, writer: Writer?, position: Symbol) -> void
+    # Raises ArgumentError for anything but :start, :end or a non-negative byte offset.
+    def initialize: (executable: Pathname, path: String | Pathname, writer: Writer?, position: Symbol | Integer) -> void
 
     def argv: () -> Array[String]
 

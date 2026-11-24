@@ -53,7 +53,8 @@ class Tayle
 
   ##
   # Follows +path+ (a String or Pathname) from its current end, so only what is appended from now
-  # on is yielded; <tt>position: :start</tt> yields what is already there first.  A missing +path+
+  # on is yielded; <tt>position: :start</tt> yields what is already there first, and an Integer
+  # yields from that byte offset, 0 being the first byte.  A missing +path+
   # is read from its first byte once it appears, though GNU tail then polls instead of using
   # inotify.
   #
@@ -82,7 +83,7 @@ class Tayle
   end
 
   ##
-  # Where reading began: +:start+ or +:end+ of #path.  Not a live offset, since +tail+ moves on to
+  # Where reading began: +:start+, +:end+ or the byte offset given.  Not a live offset, since +tail+ moves on to
   # a new file when the log is rotated.
   def position
     @command.position

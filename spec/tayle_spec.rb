@@ -217,8 +217,8 @@ RSpec.describe Tayle do
       expect { described_class.new(log, writer_pid: "not-a-pid") }.to raise_error(ArgumentError)
     end
 
-    it "rejects a position other than :start or :end" do
-      message = "position: must be :start or :end, not :middle"
+    it "rejects a position other than :start, :end or a byte offset" do
+      message = "position: must be :start, :end or a byte offset, not :middle"
       expect { described_class.new(log, position: :middle) }.to raise_error(ArgumentError, message)
     end
 
@@ -234,6 +234,34 @@ RSpec.describe Tayle do
 
       it "reports :start as its position" do
         expect(tayle.position).to eq(:start)
+      end
+    end
+
+    it "rejects a negative byte offset" do
+      message = "position: must be :start, :end or a byte offset, not -1"
+      expect { described_class.new(log, position: -1) }.to raise_error(ArgumentError, message)
+    end
+
+    context "with a byte offset" do
+      it "yields from that byte on" do
+        tayle = follow(log, position: 4)
+        expect(tayle.first).to eq("record\n")
+      ensure
+        tayle&.close
+      end
+
+      it "yields from the first byte at offset 0" do
+        tayle = follow(log, position: 0)
+        expect(tayle.first).to eq("old record\n")
+      ensure
+        tayle&.close
+      end
+
+      it "reports the offset as its position" do
+        tayle = follow(log, position: 4)
+        expect(tayle.position).to eq(4)
+      ensure
+        tayle&.close
       end
     end
 
