@@ -14,8 +14,9 @@ require "zeitwerk"
 #     tayle.each_line(chomp: true).lazy.map(&:upcase).each { puts it }
 #   end
 #
-# Pass <tt>position: :start</tt> to read what the log already holds first, +writer_pid+ to stop
-# when the process writing it does, and +tail_path+ to run a +tail+ other than the first on +PATH+:
+# Pass <tt>position: :start</tt> to read what the log already holds first (or a byte offset to
+# start there), +writer_pid+ to stop when the process writing it does, and +tail_path+ to run a
+# +tail+ other than the first on +PATH+:
 #
 #   writer_pid = Integer(Pathname("app.pid").read)
 #   Tayle.new("app.log", position: :start, writer_pid:, tail_path: "/opt/coreutils/bin/tail") do |tayle|
@@ -53,9 +54,12 @@ class Tayle
 
   ##
   # Follows +path+ (a String or Pathname) from its current end, so only what is appended from now
-  # on is yielded; <tt>position: :start</tt> yields what is already there first.  A missing +path+
-  # is read from its first byte once it appears, though GNU tail then polls instead of using
-  # inotify.
+  # on is yielded; <tt>position: :start</tt> yields what is already there first, and an Integer
+  # yields from that byte offset, 0 being the first byte.  An offset past the end raises
+  # ArgumentError, since tail would read the file again from its first byte; one that lands
+  # mid-line yields the rest of that line, which may start inside a UTF-8 character.  A missing
+  # +path+ is read from its first byte once it appears (only offset 0 is accepted for it), though
+  # GNU tail then polls instead of using inotify.
   #
   # With +writer_pid+, <tt>tail --pid</tt> exits within 0.1s of that process being reaped (an
   # unreaped zombie still counts as alive), after one last read, and #each returns.
@@ -82,8 +86,8 @@ class Tayle
   end
 
   ##
-  # Where reading began: +:start+ or +:end+ of #path.  Not a live offset, since +tail+ moves on to
-  # a new file when the log is rotated.
+  # Where reading began: +:start+, +:end+ or the byte offset given.  Not a live offset: once the
+  # log is rotated, +tail+ reads the new file from its first byte.
   def position
     @command.position
   end

@@ -217,8 +217,8 @@ RSpec.describe Tayle do
       expect { described_class.new(log, writer_pid: "not-a-pid") }.to raise_error(ArgumentError)
     end
 
-    it "rejects a position other than :start or :end" do
-      message = "position: must be :start or :end, not :middle"
+    it "rejects a position other than :start, :end or a byte offset" do
+      message = "position: must be :start, :end or a non-negative byte offset, not :middle"
       expect { described_class.new(log, position: :middle) }.to raise_error(ArgumentError, message)
     end
 
@@ -234,6 +234,71 @@ RSpec.describe Tayle do
 
       it "reports :start as its position" do
         expect(tayle.position).to eq(:start)
+      end
+    end
+
+    it "rejects a negative byte offset" do
+      message = "position: must be :start, :end or a non-negative byte offset, not -1"
+      expect { described_class.new(log, position: -1) }.to raise_error(ArgumentError, message)
+    end
+
+    [4.0, "4", true, nil].each do |position|
+      it "rejects a position of #{position.inspect}" do
+        expect { described_class.new(log, position:) }.to raise_error(ArgumentError)
+      end
+    end
+
+    it "rejects a byte offset past the end of the log" do
+      message = "position: byte offset 12 is past the end of #{log} (11 bytes)"
+      expect { described_class.new(log, position: 12) }.to raise_error(ArgumentError, message)
+    end
+
+    context "when the log does not exist yet" do
+      let(:log) { dir.join("app.log") }
+
+      it "rejects a byte offset beyond its first byte" do
+        message = "position: byte offset 1 is past the end of #{log} (0 bytes)"
+        expect { described_class.new(log, position: 1) }.to raise_error(ArgumentError, message)
+      end
+
+      it "reads it from its first byte at offset 0 once it appears" do
+        tayle = follow(log, position: 0)
+        append("first record\n")
+        expect(tayle.first).to eq("first record\n")
+      ensure
+        tayle&.close
+      end
+    end
+
+    context "with a byte offset" do
+      it "yields from that byte on, then what is appended" do
+        tayle = follow(log, position: 4)
+        append("new record\n")
+        expect(tayle.first(2)).to eq(["record\n", "new record\n"])
+      ensure
+        tayle&.close
+      end
+
+      it "yields only what is appended at an offset equal to the log's size" do
+        tayle = follow(log, position: log.size)
+        append("new record\n")
+        expect(tayle.first).to eq("new record\n")
+      ensure
+        tayle&.close
+      end
+
+      it "yields from the first byte at offset 0" do
+        tayle = follow(log, position: 0)
+        expect(tayle.first).to eq("old record\n")
+      ensure
+        tayle&.close
+      end
+
+      it "reports the offset as its position" do
+        tayle = follow(log, position: 4)
+        expect(tayle.position).to eq(4)
+      ensure
+        tayle&.close
       end
     end
 

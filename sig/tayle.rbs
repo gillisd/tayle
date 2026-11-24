@@ -1,8 +1,8 @@
 class Tayle
   include Enumerable[String]
 
-  # Where reading begins: the file's current end, or its first byte.
-  type position = :start | :end
+  # Where reading begins: the file's current end, its first byte, or a byte offset.
+  type position = :start | :end | Integer
 
   LOADER: Zeitwerk::GemLoader
 
@@ -18,9 +18,10 @@ class Tayle
 
   attr_reader lines_read: Integer
 
-  # Any Symbol reaches Command, which raises ArgumentError unless it is :start or :end;
-  # writer_pid is coerced with Integer(), so a non-numeric String raises the same.
-  def initialize: (String | Pathname path, ?writer_pid: (Integer | String)?, ?tail_path: String | Pathname, ?position: Symbol) ?{ (Tayle) -> void } -> void
+  # Any position reaches Command, which raises ArgumentError unless it is :start, :end or a byte
+  # offset within the file; writer_pid is coerced with Integer(), so a non-numeric String raises
+  # the same.
+  def initialize: (String | Pathname path, ?writer_pid: (Integer | String)?, ?tail_path: String | Pathname, ?position: untyped) ?{ (Tayle) -> void } -> void
 
   def path: () -> Pathname
 
