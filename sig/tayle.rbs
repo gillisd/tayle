@@ -18,7 +18,7 @@ class Tayle
 
   attr_reader lines_read: Integer
 
-  # Any Symbol or Integer reaches Command, which raises ArgumentError unless it is :start, :end or not negative;
+  # Any Symbol or Integer reaches Command, which raises ArgumentError unless it is :start, :end or a non-negative Integer;
   # writer_pid is coerced with Integer(), so a non-numeric String raises the same.
   def initialize: (String | Pathname path, ?writer_pid: (Integer | String)?, ?tail_path: String | Pathname, ?position: Symbol | Integer) ?{ (Tayle) -> void } -> void
 

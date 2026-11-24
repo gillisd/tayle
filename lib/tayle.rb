@@ -83,8 +83,8 @@ class Tayle
   end
 
   ##
-  # Where reading began: +:start+, +:end+ or the byte offset given.  Not a live offset, since +tail+ moves on to
-  # a new file when the log is rotated.
+  # Where reading began: +:start+, +:end+ or the byte offset given; it does not advance, since
+  # +tail+ moves on to a new file when the log is rotated.
   def position
     @command.position
   end
